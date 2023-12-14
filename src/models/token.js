@@ -9,10 +9,25 @@ const TokenSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    token: String,
+    token: {
+      type: String,
+      requried: [true, "Refresh token is required."],
+    },
+    expiryAt: Date,
   },
   { timestamps: true }
 );
+
+TokenSchema.pre("save", function (next) {
+  if (!this.expiryAt || this.isModified("createdAt")) {
+    this.expiryAt = new Date(
+      this.createdAt.getTime() + parseInt(process.env.REFRESH_TOKEN_LIFE)
+    );
+  }
+  next();
+});
+
+TokenSchema.index({ expiryAt: 1 }, { expireAfterSeconds: 0 });
 
 TokenSchema.plugin(autopopulate);
 

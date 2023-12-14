@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { isEmail } = require("validator");
 const autopopulate = require("mongoose-autopopulate");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
@@ -10,16 +11,18 @@ const UserSchema = new Schema(
     username: {
       type: String,
       unique: true,
-      require: true,
+      required: [true, "Username is required."],
     },
     email: {
       type: String,
       unique: true,
-      require: true,
+      required: [true, "Email is required."],
+      validate: [isEmail, "Email is invalid."],
     },
     password: {
       type: String,
-      require: true,
+      required: [true, "Password is required."],
+      minlength: [8, "Minimum password length is 8 characters"],
     },
     fullname: String,
     avatar: String,
@@ -96,6 +99,27 @@ UserSchema.pre("save", async function (next) {
 
   next();
 });
+
+UserSchema.statics.login = async function (email, password) {
+  const user = await this.findOne({ email });
+  const err = new Error("");
+  err.name = "MyError";
+
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    } else {
+      err.message = "Incorrect password.";
+      err.keyValue = "password";
+      throw err;
+    }
+  } else {
+    err.message = "No account with this email has been registered.";
+    err.keyValue = "email";
+    throw err;
+  }
+};
 
 UserSchema.plugin(autopopulate);
 

@@ -1,6 +1,55 @@
-const handleErrors = (err) => {
-  console.log(err);
-  return {};
+const handleErrors = (fn) => {
+  return function (req, res, next) {
+    return fn(req, res, next).catch((error) => {
+      // Custom error
+      if (error.name == "MyError") {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: error.message,
+          error: error,
+          keyValue: error.keyValue,
+        });
+      }
+
+      //Validation error
+      if (error.name == "ValidationError") {
+        const keyValue = Object.keys(error.errors);
+        const messages = Object.values(error.errors).map((err) => ({
+          name: err.path,
+          message: err.message,
+        }));
+
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: messages,
+          keyValue,
+          error: error,
+        });
+      }
+
+      // Duplicate error
+      if (error.code == 11000) {
+        const keyValue = Object.keys(error.keyValue || {})[0];
+        return res.status(500).json({
+          success: false,
+          result: null,
+          message: `This ${keyValue} already exists.`,
+          keyValue,
+          error: error,
+        });
+      }
+
+      // Server error
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: "Something went wrong.",
+        error: error,
+      });
+    });
+  };
 };
 
 module.exports = {

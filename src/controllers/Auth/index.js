@@ -96,54 +96,48 @@ const authController = {
         });
       }
 
-      if (token.expiryAt > new Date()) {
+      if (token.expiryAt < new Date()) {
         await Token.findOneAndDelete({ token: token.token });
         return res.status(403).json({
           success: false,
           result: null,
-          message:
-            "Refresh token was expired. Please make a new signin request.",
+          message: "Refresh token was expired. Please make a new signin request.",
         });
       }
 
-      jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-        (err, decoded) => {
-          if (err) {
-            return res.status(403).json({
-              success: false,
-              result: null,
-              message: "Refresh token is invalid.",
-            });
-          }
-
-          const newAccessToken = jwt.sign(
-            { id: decoded.id, username: decoded.username },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: process.env.ACCESS_TOKEN_LIFE }
-          );
-
-          return res
-            .status(200)
-            .cookie("access_token", newAccessToken, {
-              maxAge: process.env.ACCESS_TOKEN_LIFE,
-              sameSite: "Lax",
-              httpOnly: true,
-              secure: false,
-              domain: req.hostname,
-              path: "/",
-              Partitioned: true,
-            })
-            .json({
-              success: true,
-              result: { accessToken: newAccessToken, refreshToken },
-              message: "Successfully refresh AccessToken.",
-            });
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(403).json({
+            success: false,
+            result: null,
+            message: "Refresh token is invalid.",
+          });
         }
-      );
+
+        const newAccessToken = jwt.sign(
+          { id: decoded.id, username: decoded.username },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: process.env.ACCESS_TOKEN_LIFE }
+        );
+
+        return res
+          .status(200)
+          .cookie("access_token", newAccessToken, {
+            maxAge: process.env.ACCESS_TOKEN_LIFE,
+            sameSite: "Lax",
+            httpOnly: true,
+            secure: false,
+            domain: req.hostname,
+            path: "/",
+            Partitioned: true,
+          })
+          .json({
+            success: true,
+            result: { accessToken: newAccessToken, refreshToken },
+            message: "Successfully refresh AccessToken.",
+          });
+      });
     } catch (error) {
-      console.log(error);
       return res.status(500).json({
         success: false,
         result: null,
@@ -166,15 +160,11 @@ const authController = {
       }
       await Token.findOneAndDelete({ token: refreshToken });
 
-      return res
-        .clearCookie("access_token")
-        .clearCookie("refresh_token")
-        .status(200)
-        .json({
-          success: true,
-          result: null,
-          message: "Successfully logout.",
-        });
+      return res.clearCookie("access_token").clearCookie("refresh_token").status(200).json({
+        success: true,
+        result: null,
+        message: "Successfully logout.",
+      });
     } catch (error) {
       return res.status(500).json({
         success: false,

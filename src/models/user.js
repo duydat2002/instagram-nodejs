@@ -101,7 +101,7 @@ UserSchema.pre("save", async function (next) {
 });
 
 UserSchema.statics.login = async function (email, password) {
-  const user = await this.findOne({ email });
+  const user = await this.findOne({ $or: [{ email: email }, { username: email }] });
   const err = new Error("");
   err.name = "MyError";
 

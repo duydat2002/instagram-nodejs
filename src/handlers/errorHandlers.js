@@ -41,6 +41,7 @@ const handleErrors = (fn) => {
         });
       }
 
+      console.log(error);
       // Server error
       return res.status(500).json({
         success: false,

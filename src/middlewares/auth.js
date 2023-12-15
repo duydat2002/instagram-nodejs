@@ -20,8 +20,7 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    console.log(decoded.username, token.slice(-5));
-    req.userId = decoded.id;
+    req.payload = decoded;
     next();
   });
 };

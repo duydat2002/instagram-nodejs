@@ -43,7 +43,7 @@ const userController = {
     return res.status(200).json({
       success: true,
       result: user,
-      message: "Update done. cac",
+      message: "Update done.",
     });
   },
   deleteUser: async (req, res) => {

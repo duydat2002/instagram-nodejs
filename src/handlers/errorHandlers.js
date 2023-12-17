@@ -41,6 +41,17 @@ const handleErrors = (fn) => {
         });
       }
 
+      // Cast error
+      if (error.name == "CastError") {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: "Id is invalid",
+          keyValue: "id",
+          error: error,
+        });
+      }
+
       console.log(error);
       // Server error
       return res.status(500).json({

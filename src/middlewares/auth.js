@@ -1,6 +1,22 @@
 const jwt = require("jsonwebtoken");
 
-const verifyToken = async (req, res, next) => {
+const verifyTokenWithPermission = (isCheckPermission = true) => {
+  return (req, res, next) => {
+    return verifyToken(req, res, () => {
+      if (isCheckPermission && req.payload.id != req.params.id) {
+        return res.status(403).json({
+          success: false,
+          result: null,
+          message: "Permission denied.",
+        });
+      }
+
+      next();
+    });
+  };
+};
+
+const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -27,4 +43,5 @@ const verifyToken = async (req, res, next) => {
 
 module.exports = {
   verifyToken,
+  verifyTokenWithPermission,
 };

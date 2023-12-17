@@ -1,6 +1,11 @@
 const User = require("@/models/user");
 const Token = require("@/models/token");
-const { singleUpload } = require("@/handlers/firebaseUpload");
+const {
+  singleUpload,
+  multipleUpload,
+  deleteFileStorageByUrl,
+  deleteFolderStorage,
+} = require("@/handlers/firebaseUpload");
 
 const userController = {
   getAllUser: async (req, res) => {
@@ -11,8 +16,8 @@ const userController = {
       message: "Get done.",
     });
   },
-  getUserByUsername: async (req, res) => {
-    const user = await User.findOne({ username: req.params.username }, { password: 0 });
+  getUserById: async (req, res) => {
+    const user = await User.findById(req.params.id, { password: 0 });
 
     return res.status(200).json({
       success: true,
@@ -31,12 +36,12 @@ const userController = {
         });
       }
 
-      const avatar = await singleUpload(req.file, `${req.payload.id}/avatar`);
+      const avatar = await singleUpload(req.file, `${req.params.id}/avatar`);
 
       req.body.avatar = avatar;
     }
 
-    const user = await User.findOneAndUpdate({ username: req.params.username }, req.body, {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
 
@@ -47,7 +52,7 @@ const userController = {
     });
   },
   deleteUser: async (req, res) => {
-    const user = await User.findOneAndDelete({ username: req.params.username });
+    const user = await User.findByIdAndDelete(req.params.id);
     if (user) {
       await Token.findOneAndDelete({ user: user._id });
     }
@@ -59,10 +64,18 @@ const userController = {
     });
   },
   followUser: async (req, res) => {
-    const user = await User.findOne({ username: req.params.username }, {});
-    const otherUser = await User.findOne({ username: req.body.username }, {});
+    const user = await User.findById(req.params.id, { username: 1, followings: 1 });
+    const otherUser = await User.findById(req.body.id, { username: 1, followers: 1 });
 
-    if (user && otherUser && !user.followings.includes(otherUser._id)) {
+    if (!user || !otherUser) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: `User not found.`,
+      });
+    }
+
+    if (!user.followings.includes(otherUser._id)) {
       user.followings.push(otherUser._id);
       otherUser.followers.push(user._id);
 
@@ -72,17 +85,25 @@ const userController = {
     return res.status(200).json({
       success: true,
       result: null,
-      message: `${req.params.username} followed ${req.body.username}.`,
+      message: `${user.username} followed ${otherUser.username}.`,
     });
   },
   unfollowUser: async (req, res) => {
-    const user = await User.findOne({ username: req.params.username }, {});
-    const otherUser = await User.findOne({ username: req.body.username }, {});
+    const user = await User.findById(req.params.id, { username: 1, followings: 1 });
+    const otherUser = await User.findById(req.body.id, { username: 1, followers: 1 });
+
+    if (!user || !otherUser) {
+      return res.status(500).json({
+        success: false,
+        result: null,
+        message: `User not found.`,
+      });
+    }
 
     const otherUserIndex = user.followings.findIndex((u) => u._id.equals(otherUser._id));
     const userIndex = otherUser.followers.findIndex((u) => u._id.equals(user._id));
 
-    if (user && otherUser && otherUserIndex != -1 && userIndex != -1) {
+    if (otherUserIndex != -1 && userIndex != -1) {
       user.followings.splice(otherUserIndex, 1);
       otherUser.followers.splice(userIndex, 1);
 
@@ -92,21 +113,45 @@ const userController = {
     return res.status(200).json({
       success: true,
       result: null,
-      message: `${req.params.username} unfollowed ${req.body.username}.`,
+      message: `${user.username} unfollowed ${otherUser.username}.`,
     });
   },
   uploadTest: async (req, res) => {
-    const file = req.file;
-    if (!file) {
-      return res.status(400).send("Error: No files found");
-    }
-    if (!file.mimetype.includes("image")) {
-      return res.status(400).send("File must be image");
+    const files = req.files;
+
+    if (!files) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "No files found.",
+      });
     }
 
-    const url = await singleUpload(file, "cac");
+    files.forEach((file) => {
+      if (!file.mimetype.includes("image")) {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: "File must be image.",
+        });
+      }
+    });
 
-    return res.status(200).json({ cac: "cac", url });
+    const urls = await multipleUpload(files, "testne");
+
+    return res.status(200).json({ urls });
+
+    // const file = req.file;
+    // if (!file) {
+    //   return res.status(400).send("Error: No files found");
+    // }
+    // if (!file.mimetype.includes("image")) {
+    //   return res.status(400).send("File must be image");
+    // }
+
+    // const url = await multipleUpload(file, "cac");
+
+    // return res.status(200).json({ url });
   },
 };
 

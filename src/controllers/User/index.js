@@ -19,10 +19,17 @@ const userController = {
   getUserById: async (req, res) => {
     const user = await User.findById(req.params.id, { password: 0 });
 
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
     return res.status(200).json({
       success: true,
       result: { user },
-      message: "Get done.",
+      message: "Successfully get user.",
     });
   },
   updateUser: async (req, res) => {
@@ -45,22 +52,35 @@ const userController = {
       new: true,
     });
 
-    return res.status(200).json({
-      success: true,
-      result: user,
-      message: "Update done.",
-    });
-  },
-  deleteUser: async (req, res) => {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (user) {
-      await Token.findOneAndDelete({ user: user._id });
-    }
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
 
     return res.status(200).json({
       success: true,
       result: user,
-      message: "Delete done.",
+      message: "Successfully update user.",
+    });
+  },
+  deleteUser: async (req, res) => {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    await Token.findOneAndDelete({ user: user._id });
+
+    return res.status(200).json({
+      success: true,
+      result: user,
+      message: "Successfully delete user.",
     });
   },
   followUser: async (req, res) => {
@@ -71,7 +91,7 @@ const userController = {
       return res.status(500).json({
         success: false,
         result: null,
-        message: `User not found.`,
+        message: `Cannot found user.`,
       });
     }
 
@@ -96,19 +116,17 @@ const userController = {
       return res.status(500).json({
         success: false,
         result: null,
-        message: `User not found.`,
+        message: `Cannot found user.`,
       });
     }
 
     const otherUserIndex = user.followings.findIndex((u) => u._id.equals(otherUser._id));
     const userIndex = otherUser.followers.findIndex((u) => u._id.equals(user._id));
 
-    if (otherUserIndex != -1 && userIndex != -1) {
-      user.followings.splice(otherUserIndex, 1);
-      otherUser.followers.splice(userIndex, 1);
+    if (otherUserIndex != -1) user.followings.splice(otherUserIndex, 1);
+    if (userIndex != -1) otherUser.followers.splice(userIndex, 1);
 
-      await Promise.all[(user.save(), otherUser.save())];
-    }
+    await Promise.all[(user.save(), otherUser.save())];
 
     return res.status(200).json({
       success: true,
@@ -128,6 +146,7 @@ const userController = {
     }
 
     files.forEach((file) => {
+      console.log(file.mimetype);
       if (!file.mimetype.includes("image")) {
         return res.status(400).json({
           success: false,

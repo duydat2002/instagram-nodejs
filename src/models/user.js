@@ -4,7 +4,7 @@ const autopopulate = require("mongoose-autopopulate");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-const { Schema } = mongoose;
+const { Schema, Types } = mongoose;
 
 const UserSchema = new Schema(
   {
@@ -96,6 +96,34 @@ UserSchema.pre("save", async function (next) {
 
     user.password = passwordHash;
   }
+
+  next();
+});
+
+UserSchema.pre(["deleteOne", "deleteMany", "findOneAndDelete"], async function (next) {
+  const Token = mongoose.model("Token");
+  const User = mongoose.model("User");
+  const Post = mongoose.model("Post");
+  const Comment = mongoose.model("Comment");
+
+  const user = this.getQuery();
+
+  const userId = new Types.ObjectId(user._id);
+
+  await Promise.all([
+    Token.deleteMany({ user: userId }),
+    User.updateMany(
+      { $or: [{ followers: { $elemMatch: { $eq: userId } } }, { followings: { $elemMatch: { $eq: userId } } }] },
+      { $pull: { followers: userId, followings: userId } }
+    ),
+    Post.deleteMany({ author: userId }),
+    Post.updateMany(
+      { $or: [{ tags: { $elemMatch: { $eq: userId } } }, { likes: { $elemMatch: { $eq: userId } } }] },
+      { $pull: { tags: userId, likes: userId } }
+    ),
+    Comment.deleteMany({ user: userId }),
+    Comment.updateMany({ likes: { $elemMatch: { $eq: userId } } }, { $pull: { likes: userId } }),
+  ]);
 
   next();
 });

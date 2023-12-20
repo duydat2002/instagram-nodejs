@@ -10,6 +10,13 @@ router.get("/", verifyTokenWithPermission(false), handleErrors(userController.ge
 router.get("/:id", verifyTokenWithPermission(false), handleErrors(userController.getUserById));
 router.patch("/:id", verifyTokenWithPermission(), upload.single("avatar"), handleErrors(userController.updateUser));
 router.delete("/:id", verifyTokenWithPermission(), handleErrors(userController.deleteUser));
+router.patch(
+  "/:id/avatar",
+  verifyTokenWithPermission(),
+  upload.single("avatar"),
+  handleErrors(userController.updateUserAvatar)
+);
+router.delete("/:id/avatar", verifyTokenWithPermission(), handleErrors(userController.deleteUserAvatar));
 router.post("/:id/follow", verifyTokenWithPermission(), handleErrors(userController.followUser));
 router.post("/:id/unfollow", verifyTokenWithPermission(), handleErrors(userController.unfollowUser));
 router.post(

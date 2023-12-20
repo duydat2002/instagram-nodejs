@@ -92,6 +92,66 @@ const userController = {
       message: "Successfully delete user.",
     });
   },
+  updateUserAvatar: async (req, res) => {
+    const user = await User.findById(req.params.id);
+    let avatarUrl;
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Avatar is required.",
+        keyValue: "avatar",
+      });
+    }
+
+    if (!req.file.mimetype.includes("image")) {
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Avatar must be image.",
+        keyValue: "avatar",
+      });
+    }
+
+    avatarUrl = await singleUpload(req.file, `${req.params.id}/avatar`);
+    if (user.avatar != process.env.DEFAUL_AVATAR_URL) deleteFileStorageByUrl(user.avatar);
+
+    if (avatarUrl) user.avatar = avatarUrl;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      result: user,
+      message: "Successfully update user avatar.",
+    });
+  },
+  deleteUserAvatar: async (req, res) => {
+    const user = await User.findByIdAndUpdate(req.params.id, { avatar: process.env.DEFAUL_AVATAR_URL }, { new: true });
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    deleteFolderStorage(`${user._id}/avatar`);
+
+    return res.status(200).json({
+      success: true,
+      result: user,
+      message: "Successfully update user avatar.",
+    });
+  },
   followUser: async (req, res) => {
     const user = await User.findById(req.params.id, { username: 1, followings: 1 });
     const otherUser = await User.findById(req.body.id, { username: 1, followers: 1 });

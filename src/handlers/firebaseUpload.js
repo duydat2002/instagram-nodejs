@@ -44,13 +44,21 @@ const multipleUpload = async (files, destination) => {
 };
 
 const deleteFileStorageByUrl = async (url) => {
-  const fileRef = ref(storage, url.split("?")[0]);
+  try {
+    const fileRef = ref(storage, url.split("?")[0]);
 
-  await deleteObject(fileRef);
+    await deleteObject(fileRef);
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 const deleteFolderStorage = async (destination) => {
-  await bucket.deleteFiles({ prefix: destination });
+  try {
+    await bucket.deleteFiles({ prefix: destination });
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
 module.exports = {

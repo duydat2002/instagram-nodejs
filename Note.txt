@@ -1,0 +1,27 @@
+### Handle delete
+User: (posts: [], saved_posts: [], tagged_posts: [])
+1: deleteMany Token(user)
+   deleteMany Post(author)
+   deleteMany Comment(author)
+   deleteMany Reply(author)
+
+   updateMany User(pull: followers, followings)
+   updateMany Post(pull: tags, likes)
+   updateMany Comment(pull: likes)
+   updateMany Reply(pull: likes)
+
+   delete user storage
+
+Post: (comments: [])
+1,n: deleteMany Comment(post)
+   updateMany User(pull: posts, saved_posts, tagged_posts, liked_posts)
+   delete post storage
+
+Comment: (replies: [])
+1, n: deleteMany Reply(comment)
+   updateMany Post(pull: comments)
+
+Reply: (comment)
+1: updateMany Comment(pull: replies)
+   
+

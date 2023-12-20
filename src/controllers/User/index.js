@@ -33,6 +33,18 @@ const userController = {
     });
   },
   updateUser: async (req, res) => {
+    const { username, email, fullname, bio } = req.body;
+    let avatarUrl;
+
+    const user = await User.findById(req.params.id);
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
     if (req.file) {
       if (!req.file.mimetype.includes("image")) {
         return res.status(400).json({
@@ -43,21 +55,18 @@ const userController = {
         });
       }
 
-      const avatar = await singleUpload(req.file, `${req.params.id}/avatar`);
+      avatarUrl = await singleUpload(req.file, `${req.params.id}/avatar`);
 
-      req.body.avatar = avatar;
+      if (user.avatar != process.env.DEFAUL_AVATAR_URL) deleteFileStorageByUrl(user.avatar);
     }
 
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (fullname) user.fullname = fullname;
+    if (bio) user.bio = bio;
+    if (avatarUrl) user.avatar = avatarUrl;
 
-    if (!user)
-      return res.status(400).json({
-        success: false,
-        result: null,
-        message: "Cannot found user.",
-      });
+    await user.save();
 
     return res.status(200).json({
       success: true,

@@ -1,3 +1,4 @@
+const { deleteFolderStorage } = require("@/handlers/firebaseUpload");
 const mongoose = require("mongoose");
 const autopopulate = require("mongoose-autopopulate");
 
@@ -10,6 +11,7 @@ const PostSchema = new Schema(
       ref: "User",
       required: [true, "Author is required."],
       autopopulate: {
+        select: "_id username",
         maxDepth: 1,
       },
     },
@@ -64,17 +66,29 @@ const PostSchema = new Schema(
   { timestamps: true }
 );
 
-PostSchema.pre(["deleteOne", "deleteMany", "findOneAndDelete"], async function (next) {
+PostSchema.pre(["deleteOne", "findOneAndDelete", "deleteMany"], async function (next) {
   const User = mongoose.model("User");
+  const Post = mongoose.model("Post");
   const Comment = mongoose.model("Comment");
 
-  const post = this.getQuery();
-  const commentsId = post.comments.map((comment) => new Types.ObjectId(comment));
+  const deletedPosts = await Post.find(this.getFilter(), { _id: 1, author: 1 }).lean();
+  const deletedPostsId = deletedPosts.map((post) => post._id);
 
-  await Promise.all([
-    Comment.deleteMany({ _id: { $in: commentsId } }),
-    User.updateMany({ liked_posts: { $elemMatch: { $eq: post._id } } }, { $pull: { liked_posts: post._id } }),
-  ]);
+  const promises = [];
+
+  promises.push(Comment.deleteMany({ post: { $in: deletedPostsId } }));
+
+  deletedPosts.forEach((post) => {
+    promises.push(
+      User.updateMany({ posts: { $elemMatch: { $eq: post._id } } }, { $pull: { posts: post._id } }),
+      User.updateMany({ saved_posts: { $elemMatch: { $eq: post._id } } }, { $pull: { saved_posts: post._id } }),
+      User.updateMany({ tagged_posts: { $elemMatch: { $eq: post._id } } }, { $pull: { tagged_posts: post._id } }),
+      User.updateMany({ liked_posts: { $elemMatch: { $eq: post._id } } }, { $pull: { liked_posts: post._id } })
+    );
+    promises.push(deleteFolderStorage(`${post.author}/posts/${post._id}`));
+  });
+
+  await Promise.all(promises);
 
   next();
 });

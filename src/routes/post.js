@@ -17,6 +17,5 @@ router.post("/:postId/save", verifyToken, handleErrors(postController.savePost))
 router.post("/:postId/unsave", verifyToken, handleErrors(postController.unsavePost));
 router.post("/:postId/tag", verifyToken, handleErrors(postController.tagPost));
 router.post("/:postId/untag", verifyToken, handleErrors(postController.untagPost));
-router.post("/:postId/comment", verifyToken, handleErrors(postController.commentPost));
 
 module.exports = router;

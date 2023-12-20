@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { isEmail } = require("validator");
 const autopopulate = require("mongoose-autopopulate");
 const bcrypt = require("bcrypt");
+const { deleteFolderStorage } = require("@/handlers/firebaseUpload");
 const saltRounds = 10;
 
 const { Schema, Types } = mongoose;
@@ -25,7 +26,11 @@ const UserSchema = new Schema(
       minlength: [8, "Minimum password length is 8 characters"],
     },
     fullname: String,
-    avatar: String,
+    avatar: {
+      type: String,
+      default:
+        "https://firebasestorage.googleapis.com/v0/b/instagram-storage-bc9c9.appspot.com/o/default%2Favatar.png?alt=media&token=ede62662-a16f-4e37-a950-4921aaba5379",
+    },
     bio: String,
     followers: [
       {
@@ -100,29 +105,37 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-UserSchema.pre(["deleteOne", "deleteMany", "findOneAndDelete"], async function (next) {
+UserSchema.pre(["deleteOne", "findOneAndDelete"], async function (next) {
   const Token = mongoose.model("Token");
   const User = mongoose.model("User");
   const Post = mongoose.model("Post");
   const Comment = mongoose.model("Comment");
+  const Reply = mongoose.model("Reply");
 
-  const user = this.getQuery();
-
-  const userId = new Types.ObjectId(user._id);
+  const deletedUser = this.getQuery();
+  const deletedUserId = deletedUser._id;
 
   await Promise.all([
-    Token.deleteMany({ user: userId }),
+    Token.deleteMany({ user: deletedUserId }),
+    Post.deleteMany({ author: deletedUserId }),
+    Comment.deleteMany({ author: deletedUserId }),
+    Reply.deleteMany({ author: deletedUserId }),
     User.updateMany(
-      { $or: [{ followers: { $elemMatch: { $eq: userId } } }, { followings: { $elemMatch: { $eq: userId } } }] },
-      { $pull: { followers: userId, followings: userId } }
+      {
+        $or: [
+          { followers: { $elemMatch: { $eq: deletedUserId } } },
+          { followings: { $elemMatch: { $eq: deletedUserId } } },
+        ],
+      },
+      { $pull: { followers: deletedUserId, followings: deletedUserId } }
     ),
-    Post.deleteMany({ author: userId }),
     Post.updateMany(
-      { $or: [{ tags: { $elemMatch: { $eq: userId } } }, { likes: { $elemMatch: { $eq: userId } } }] },
-      { $pull: { tags: userId, likes: userId } }
+      { $or: [{ tags: { $elemMatch: { $eq: deletedUserId } } }, { likes: { $elemMatch: { $eq: deletedUserId } } }] },
+      { $pull: { tags: deletedUserId, likes: deletedUserId } }
     ),
-    Comment.deleteMany({ user: userId }),
-    Comment.updateMany({ likes: { $elemMatch: { $eq: userId } } }, { $pull: { likes: userId } }),
+    Comment.updateMany({ likes: { $elemMatch: { $eq: deletedUserId } } }, { $pull: { likes: deletedUserId } }),
+    Reply.updateMany({ likes: { $elemMatch: { $eq: deletedUserId } } }, { $pull: { likes: deletedUserId } }),
+    deleteFolderStorage(deletedUserId),
   ]);
 
   next();

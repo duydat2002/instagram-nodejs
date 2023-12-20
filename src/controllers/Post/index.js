@@ -40,7 +40,7 @@ const postController = {
     return res.status(200).json({
       success: true,
       result: { posts },
-      message: "Get done.",
+      message: "Successfully get posts.",
     });
   },
   getPostById: async (req, res) => {
@@ -60,15 +60,9 @@ const postController = {
     });
   },
   createPost: async (req, res) => {
-    const { author, caption, tags, type, ratio } = req.body;
+    const { caption, tags, type, ratio } = req.body;
+    const userId = req.payload.id;
     const files = req.files;
-
-    if (author != req.payload.id)
-      return res.status(400).json({
-        success: false,
-        result: null,
-        message: "Permission denied.",
-      });
 
     const { success, message } = checkFiles(files, ["image", "video"]);
     if (!success) {
@@ -80,7 +74,7 @@ const postController = {
     }
 
     const post = await new Post({
-      author,
+      author: userId,
       caption,
       tags,
       type,
@@ -325,7 +319,6 @@ const postController = {
       message: `${user.username} untag post ${post._id}.`,
     });
   },
-  commentPost: async (req, res) => {},
 };
 
 module.exports = postController;

@@ -3,16 +3,12 @@ const User = require("@/models/user");
 const Token = require("@/models/token");
 
 const responseToken = async (req, res, { user, message }) => {
-  const accessToken = jwt.sign(
-    { id: user._id, username: user.username },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_LIFE }
-  );
-  const refreshToken = jwt.sign(
-    { id: user._id, username: user.username },
-    process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_LIFE }
-  );
+  const accessToken = jwt.sign({ id: user._id, username: user.username }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_LIFE,
+  });
+  const refreshToken = jwt.sign({ id: user._id, username: user.username }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_LIFE,
+  });
 
   await new Token({
     user: user._id,
@@ -47,6 +43,55 @@ const responseToken = async (req, res, { user, message }) => {
 };
 
 const authController = {
+  checkRegister: async (req, res) => {
+    const { email, fullname, username, password } = req.body;
+
+    const keyValues = [];
+    const errors = [];
+
+    const findEmail = await User.findOne({ $or: [{ email: email }] }, {}).lean();
+    if (findEmail) {
+      keyValues.push("email");
+      errors.push({ name: "email", message: "This email already exists." });
+    }
+
+    const findUsername = await User.findOne({ $or: [{ username: username }] }, {}).lean();
+    if (findUsername) {
+      keyValues.push("username");
+      errors.push({ name: "username", message: "This username already exists." });
+    }
+
+    const validate = new User({
+      email,
+      fullname,
+      username,
+      password,
+    }).validateSync();
+
+    if (validate) {
+      Object.values(validate.errors).forEach((err) => {
+        if (!keyValues.includes(err.path)) {
+          keyValues.push(err.path);
+          errors.push({ name: err.path, message: err.message });
+        }
+      });
+    }
+
+    if (!!keyValues.length)
+      return res.status(400).json({
+        success: false,
+        result: false,
+        keyValue: keyValues,
+        error: errors,
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: true,
+      error: null,
+    });
+  },
+
   register: async (req, res) => {
     const { email, fullname, username, password } = req.body;
 

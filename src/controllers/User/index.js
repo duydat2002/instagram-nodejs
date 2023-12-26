@@ -16,6 +16,22 @@ const userController = {
       message: "Get done.",
     });
   },
+  getUser: async (req, res) => {
+    const user = await User.findById(req.payload.id, { password: 0 });
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: { user },
+      message: "Successfully get user.",
+    });
+  },
   getUserById: async (req, res) => {
     const user = await User.findById(req.params.id, { password: 0 });
 

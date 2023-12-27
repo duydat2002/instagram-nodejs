@@ -156,7 +156,7 @@ UserSchema.statics.login = async function (email, password) {
       throw err;
     }
   } else {
-    err.message = "Email has been registered.";
+    err.message = "No accounts registered with this email.";
     err.keyValue = "email";
     throw err;
   }

@@ -91,7 +91,7 @@ const userController = {
     });
   },
   deleteUser: async (req, res) => {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.id, { password: 0 });
 
     if (!user)
       return res.status(400).json({
@@ -109,7 +109,7 @@ const userController = {
     });
   },
   updateUserAvatar: async (req, res) => {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id, { password: 0 });
     let avatarUrl;
 
     if (!user)
@@ -151,7 +151,11 @@ const userController = {
     });
   },
   deleteUserAvatar: async (req, res) => {
-    const user = await User.findByIdAndUpdate(req.params.id, { avatar: process.env.DEFAUL_AVATAR_URL }, { new: true });
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { avatar: process.env.DEFAUL_AVATAR_URL },
+      { new: true }
+    ).select({ password: 0 });
 
     if (!user)
       return res.status(400).json({

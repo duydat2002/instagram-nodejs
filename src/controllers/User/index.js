@@ -1,5 +1,6 @@
 const User = require("@/models/user");
 const Token = require("@/models/token");
+const userFollowControllers = require("./follow");
 const {
   singleUpload,
   multipleUpload,
@@ -34,6 +35,22 @@ const userController = {
   },
   getUserById: async (req, res) => {
     const user = await User.findById(req.params.id, { password: 0 });
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: { user },
+      message: "Successfully get user.",
+    });
+  },
+  getUserByUsername: async (req, res) => {
+    const user = await User.findOne({ username: req.params.username }, { password: 0 });
 
     if (!user)
       return res.status(400).json({
@@ -172,57 +189,7 @@ const userController = {
       message: "Successfully update user avatar.",
     });
   },
-  followUser: async (req, res) => {
-    const user = await User.findById(req.params.id, { username: 1, followings: 1 });
-    const otherUser = await User.findById(req.body.id, { username: 1, followers: 1 });
-
-    if (!user || !otherUser) {
-      return res.status(500).json({
-        success: false,
-        result: null,
-        message: `Cannot found user.`,
-      });
-    }
-
-    if (!user.followings.includes(otherUser._id)) {
-      user.followings.push(otherUser._id);
-      otherUser.followers.push(user._id);
-
-      await Promise.all[(user.save(), otherUser.save())];
-    }
-
-    return res.status(200).json({
-      success: true,
-      result: null,
-      message: `${user.username} followed ${otherUser.username}.`,
-    });
-  },
-  unfollowUser: async (req, res) => {
-    const user = await User.findById(req.params.id, { username: 1, followings: 1 });
-    const otherUser = await User.findById(req.body.id, { username: 1, followers: 1 });
-
-    if (!user || !otherUser) {
-      return res.status(500).json({
-        success: false,
-        result: null,
-        message: `Cannot found user.`,
-      });
-    }
-
-    const otherUserIndex = user.followings.findIndex((u) => u._id.equals(otherUser._id));
-    const userIndex = otherUser.followers.findIndex((u) => u._id.equals(user._id));
-
-    if (otherUserIndex != -1) user.followings.splice(otherUserIndex, 1);
-    if (userIndex != -1) otherUser.followers.splice(userIndex, 1);
-
-    await Promise.all[(user.save(), otherUser.save())];
-
-    return res.status(200).json({
-      success: true,
-      result: null,
-      message: `${user.username} unfollowed ${otherUser.username}.`,
-    });
-  },
+  ...userFollowControllers,
   uploadTest: async (req, res) => {
     const files = req.files;
 

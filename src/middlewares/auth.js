@@ -29,7 +29,7 @@ const verifyToken = (req, res, next) => {
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(403).json({
+      return res.status(401).json({
         success: false,
         result: null,
         message: "Unauthorized.",

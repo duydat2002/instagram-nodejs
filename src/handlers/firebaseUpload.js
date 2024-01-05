@@ -6,9 +6,6 @@ const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = require("
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// const firebaseConfig = require("@/configs/firebase.json");
-// const serviceAccount = require("@/configs/firebase-admin.json");
-
 const firebaseConfig = require("../../firebase.json");
 const serviceAccount = require("../../firebase-admin.json");
 

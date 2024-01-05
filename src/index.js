@@ -30,3 +30,5 @@ mongoose
     });
   })
   .catch((err) => console.log(err));
+
+mongoose.set("toJSON", { virtuals: true });

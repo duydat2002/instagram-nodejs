@@ -2,6 +2,7 @@ const Post = require("@/models/post");
 const User = require("@/models/user");
 const { checkFiles } = require("@/handlers/errorHandlers");
 const { multipleUpload } = require("@/handlers/firebaseUpload");
+const getPosts = require("./getPosts");
 
 const checkUserPost = async (req) => {
   const userId = req.payload.id;
@@ -34,15 +35,6 @@ const checkUserPost = async (req) => {
 };
 
 const postController = {
-  getAllPost: async (req, res) => {
-    const posts = await Post.find({});
-
-    return res.status(200).json({
-      success: true,
-      result: { posts },
-      message: "Successfully get posts.",
-    });
-  },
   getPostById: async (req, res) => {
     const post = await Post.findById(req.params.postId);
 
@@ -83,7 +75,7 @@ const postController = {
 
     let urls = [];
     if (post.author) {
-      urls = await multipleUpload(files, `${author}/posts/${post._id}`);
+      urls = await multipleUpload(files, `${post.author._id}/posts/${post._id}`);
     }
 
     post.contents = urls;
@@ -319,6 +311,7 @@ const postController = {
       message: `${user.username} untag post ${post._id}.`,
     });
   },
+  ...getPosts,
 };
 
 module.exports = postController;

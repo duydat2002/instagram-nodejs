@@ -1,4 +1,16 @@
 const User = require("@/models/user");
+const { Types } = require("mongoose");
+
+const projectFollowUser = {
+  id: 1,
+  username: 1,
+  fullname: 1,
+  avatar: 1,
+  followers: 1,
+  followings: 1,
+  isFollowed: 1,
+  followOrder: 1,
+};
 
 const userFollowControllers = {
   followUser: async (req, res) => {
@@ -52,30 +64,37 @@ const userFollowControllers = {
       message: `${user.username} unfollowed ${otherUser.username}.`,
     });
   },
-  // Get mutual follow User by OtherUser
-  getMutualFollowBy: async (req, res) => {
-    const userId = req.params.id;
-    const otherUserId = req.body.id;
-
-    const mutual = await User.find(
-      {
-        followers: { $elemMatch: { $eq: otherUserId } },
-        followings: { $elemMatch: { $eq: userId } },
-      },
-      { _id: 1, avatar: 1, username: 1, fullname: 1 }
-    ).lean();
-
-    return res.status(200).json({
-      success: true,
-      result: { mutual: mutual || [] },
-      message: "Successfully get mutal.",
-    });
-  },
+  // followOrder isUser - 0, followed - 1, no follow - 2
   getFollowers: async (req, res) => {
-    const users = await User.find(
-      { followings: { $elemMatch: { $eq: req.params.id } } },
-      { _id: 1, avatar: 1, username: 1, fullname: 1 }
-    ).lean();
+    const userId = new Types.ObjectId(req.payload.id);
+    const profileUserId = new Types.ObjectId(req.params.id);
+
+    const users = await User.aggregate([
+      { $match: { followings: { $elemMatch: { $eq: profileUserId } } } },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: {
+            $cond: [{ $in: [userId, "$followers"] }, true, false],
+          },
+          followOrder: {
+            $cond: [
+              { $eq: [userId, "$_id"] },
+              0,
+              {
+                $cond: [{ $in: [userId, "$followers"] }, 1, 2],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: projectFollowUser,
+      },
+      {
+        $sort: { followOrder: 1 },
+      },
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -83,11 +102,65 @@ const userFollowControllers = {
       message: "Successfully get followers.",
     });
   },
+  // Get mutual follow ProfileUser by User
+  getMutualFollowBy: async (req, res) => {
+    const userId = new Types.ObjectId(req.payload.id);
+    const profileUserId = new Types.ObjectId(req.params.id);
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          followers: { $elemMatch: { $eq: userId } },
+          followings: { $elemMatch: { $eq: profileUserId } },
+        },
+      },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: true,
+          followOrder: 1,
+        },
+      },
+      {
+        $project: projectFollowUser,
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      result: { users: users || [] },
+      message: "Successfully get mutal follow ProfileUser by User.",
+    });
+  },
   getFollowings: async (req, res) => {
-    const users = await User.find(
-      { followers: { $elemMatch: { $eq: req.params.id } } },
-      { _id: 1, avatar: 1, username: 1, fullname: 1 }
-    ).lean();
+    const userId = new Types.ObjectId(req.params.id);
+
+    const users = await User.aggregate([
+      { $match: { followers: { $elemMatch: { $eq: userId } } } },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: {
+            $cond: [{ $in: [userId, "$followers"] }, true, false],
+          },
+          followOrder: {
+            $cond: [
+              { $eq: [userId, "$_id"] },
+              0,
+              {
+                $cond: [{ $in: [userId, "$followers"] }, 1, 2],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: projectFollowUser,
+      },
+      {
+        $sort: { followOrder: 1 },
+      },
+    ]);
 
     return res.status(200).json({
       success: true,

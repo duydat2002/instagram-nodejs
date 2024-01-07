@@ -1,6 +1,6 @@
 const express = require("express");
 const userController = require("@/controllers/User");
-const { verifyTokenWithPermission } = require("@/middlewares/auth");
+const { verifyTokenWithPermission, verifyToken } = require("@/middlewares/auth");
 const { handleErrors } = require("@/handlers/errorHandlers");
 const { upload } = require("@/handlers/firebaseUpload");
 
@@ -22,9 +22,9 @@ router.delete("/:id/avatar", verifyTokenWithPermission(), handleErrors(userContr
 
 router.post("/:id/follow", verifyTokenWithPermission(), handleErrors(userController.followUser));
 router.post("/:id/unfollow", verifyTokenWithPermission(), handleErrors(userController.unfollowUser));
-router.post("/:id/mutual-follow", handleErrors(userController.getMutualFollowBy));
-router.get("/:id/followers", handleErrors(userController.getFollowers));
-router.get("/:id/followings", handleErrors(userController.getFollowings));
+router.get("/:id/mutual-follow", verifyToken, handleErrors(userController.getMutualFollowBy));
+router.get("/:id/followers", verifyToken, handleErrors(userController.getFollowers));
+router.get("/:id/followings", verifyToken, handleErrors(userController.getFollowings));
 
 router.post(
   "/:id/upload",

@@ -1,4 +1,4 @@
-### Handle delete
+### Handle delete mongoose
 User: (posts: [], saved_posts: [], tagged_posts: [])
 1: deleteMany Token(user)
    deleteMany Post(author)
@@ -24,4 +24,33 @@ Comment: (replies: [])
 Reply: (comment)
 1: updateMany Comment(pull: replies)
    
+
+### Users
+[
+  {
+    "_id": "658b9129e2ef23426b634dfa",
+    "username": "duydat30122002",
+    "followers": ["duydat"],
+    "followings": ["duydat", "phamduydat2002"]
+  },
+  {
+    "_id": "658c16a166180974270152df",
+    "username": "phamduydat2002",
+    "followers": ["duydat", "duydat30122002"],
+    "followings": []
+  },
+  {
+    "_id": "658c343f48713ef4aae284d9",
+    "username": "duydat",
+    "followers": ["duydat30122002"],
+    "followings": ["duydat30122002", "phamduydat2002"]
+  }
+]
+
+*Mutual: {followings: profileUser, followers: user}
+          profileUser (params.id) - user (payload.id)
+
+phamduydat2002 - duydat30122002
+duydat
+
 

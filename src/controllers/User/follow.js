@@ -1,4 +1,5 @@
 const User = require("@/models/user");
+const Noti = require("@/models/notification");
 const { Types } = require("mongoose");
 
 const projectFollowUser = {
@@ -29,7 +30,15 @@ const userFollowControllers = {
       user.followings.push(otherUser._id);
       otherUser.followers.push(user._id);
 
-      await Promise.all[(user.save(), otherUser.save())];
+      // Notification
+      const noti = new Noti({
+        sender: user._id,
+        recipient: otherUser._id,
+        type: "follow",
+        content: `${user.username} is following you now.`,
+      });
+
+      await Promise.all[(user.save(), otherUser.save(), noti.save())];
     }
 
     return res.status(200).json({

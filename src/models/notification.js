@@ -5,25 +5,33 @@ const { Schema } = mongoose;
 
 const NotificationSchema = new Schema(
   {
-    content: {
-      type: String,
-      require: true,
-    },
-    user: {
+    sender: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      autopopulate: {
-        maxDepth: 1,
-      },
     },
-    post: {
+    recipient: {
       type: Schema.Types.ObjectId,
-      ref: "Post",
-      autopopulate: {
-        maxDepth: 1,
+      ref: "User",
+      requried: [true, "Recipient is required."],
+    },
+    type: {
+      type: String,
+      enum: {
+        values: ["like", "comment", "follow", "tag", "mention"],
+        message: "Post type must be in ['like', 'comment', 'follow', 'tag', 'mention']",
       },
     },
-    isRead: Boolean,
+    content: {
+      type: String,
+      require: [true, "Content is required."],
+    },
+    data: {
+      type: Object,
+    },
+    isRead: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

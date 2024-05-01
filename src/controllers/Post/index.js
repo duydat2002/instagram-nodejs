@@ -1,5 +1,6 @@
 const Post = require("@/models/post");
 const User = require("@/models/user");
+const Noti = require("@/models/notification");
 const { checkFiles } = require("@/handlers/errorHandlers");
 const { multipleUpload } = require("@/handlers/firebaseUpload");
 const getPosts = require("./getPosts");
@@ -156,7 +157,15 @@ const postController = {
     if (!user.liked_posts.includes(post._id)) user.liked_posts.push(post._id);
     if (!post.likes.includes(user._id)) post.likes.push(user._id);
 
-    await Promise.all([user.save(), post.save()]);
+    //Noti
+    const noti = new Noti({
+      sender: user._id,
+      recipient: post.author._id,
+      type: "like",
+      content: `${user.username} liked your post.`,
+    });
+
+    await Promise.all([user.save(), post.save(), noti.save()]);
 
     return res.status(200).json({
       success: true,
@@ -261,7 +270,16 @@ const postController = {
     if (!post.tags.includes(tagUserId)) post.tags.push(tagUserId);
     if (!tagUser.tagged_posts.includes(post._id)) tagUser.tagged_posts.push(post._id);
 
-    await Promise.all([tagUser.save(), post.save()]);
+    // Noti
+    const noti = new Noti({
+      sender: user._id,
+      recipient: tagUserId,
+      type: "like",
+      content: `${user.username} tagged you in their post`,
+      data: { postId: post._id },
+    });
+
+    await Promise.all([tagUser.save(), post.save(), noti.save()]);
 
     return res.status(200).json({
       success: true,

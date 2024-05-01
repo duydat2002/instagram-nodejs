@@ -165,4 +165,66 @@ UserSchema.statics.login = async function (email, password) {
 UserSchema.plugin(autopopulate);
 
 const User = mongoose.model("User", UserSchema);
+
+// Notification
+// const watchNoti = {
+//   filter: [
+//     {
+//       $match: {
+//         $and: [{ "updateDescription.updatedFields.followings": { $exists: true } }],
+//       },
+//     },
+//   ],
+//   options: { fullDocument: "whenAvailable" },
+// };
+
+// User.watch([], { fullDocument: "updateLookup" }).on("change", (data) => {
+//   console.log(data);
+//   if (operationType == 'update') {
+//     if (updateDescription.updatedFields.following) {
+
+//     }
+//   }
+// });
+
+// {
+//   _id: {
+//     _data: '82663199CA0000000B2B042C0100296E5A1004B6CAEF8AFF844EE4B9E8B5F6BC34601D463C6F7065726174696F6E54797065003C7570646174650046646F63756D656E744B65790046645F69640064658C16A166180974270152DF000004'
+//   },
+//   operationType: 'update',
+//   clusterTime: new Timestamp({ t: 1714526666, i: 11 }),
+//   wallTime: 2024-05-01T01:24:26.947Z,
+//   fullDocument: {
+//     _id: new ObjectId('658c16a166180974270152df'),
+//     username: 'phamduydat2002',
+//     email: 'phamduydat2002@gmail.com',
+//     password: '$2b$10$2MMzcpqmLqCr6uVgPGtM..VSiDN9jzGxCn6qL7rv8GxV9IlcQ/WJu',
+//     fullname: 'Phạm Duy Đạt',
+//     avatar: 'https://firebasestorage.googleapis.com/v0/b/instagram-storage-bc9c9.appspot.com/o/default%2Favatar.png?alt=media&token=ede62662-a16f-4e37-a950-4921aaba5379',
+//     followers: [
+//       new ObjectId('658c343f48713ef4aae284d9'),
+//       new ObjectId('658b9129e2ef23426b634dfa')
+//     ],
+//     followings: [],
+//     posts: [],
+//     saved_posts: [ new ObjectId('6597bf4ce69dd2f5a4b30208') ],
+//     tagged_posts: [ new ObjectId('6597bf4ce69dd2f5a4b30208') ],
+//     liked_posts: [],
+//     isPrivate: false,
+//     createdAt: 2023-12-27T12:20:49.754Z,
+//     updatedAt: 2024-05-01T01:24:26.817Z,
+//     __v: 0
+//   },
+//   ns: { db: 'Instagram', coll: 'users' },
+//   documentKey: { _id: new ObjectId('658c16a166180974270152df') },
+//   updateDescription: {
+//     updatedFields: {
+//       updatedAt: 2024-05-01T01:24:26.817Z,
+//       'followers.1': new ObjectId('658b9129e2ef23426b634dfa')
+//     },
+//     removedFields: [],
+//     truncatedArrays: []
+//   }
+// }
+
 module.exports = User;

@@ -12,7 +12,7 @@ const getPostsControllers = {
     });
   },
   getPostsByAuthor: async (req, res) => {
-    const posts = await Post.find({ author: req.params.userId });
+    const posts = await Post.find({ author: req.params.userId }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -20,16 +20,9 @@ const getPostsControllers = {
       message: "Successfully get posts by author.",
     });
   },
-  getSavedPostsByUserId: async (req, res) => {
-    if (req.payload.id != req.params.userId)
-      return res.status(403).json({
-        success: false,
-        result: null,
-        message: "Permission denied.",
-      });
-
-    const user = await User.findById(req.params.userId, { saved_posts: 1 }).lean();
-    const posts = await Post.find({ _id: { $in: user.saved_posts } });
+  getSavedPosts: async (req, res) => {
+    const user = await User.findById(req.payload.id, { saved_posts: 1 });
+    const posts = await Post.find({ _id: { $in: user.saved_posts } }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -38,7 +31,7 @@ const getPostsControllers = {
     });
   },
   getTaggedPostsByUserId: async (req, res) => {
-    const posts = await Post.find({ tags: { $elemMatch: { $eq: req.params.userId } } });
+    const posts = await Post.find({ tags: { $elemMatch: { $eq: req.params.userId } } }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,

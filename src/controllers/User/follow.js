@@ -177,6 +177,21 @@ const userFollowControllers = {
       message: "Successfully get followings.",
     });
   },
+  // Check user following other user
+  checkIsFollowing: async (req, res) => {
+    const otherUserId = new Types.ObjectId(req.params.id);
+    const userId = new Types.ObjectId(req.payload.id);
+
+    const result = await User.findOne({
+      $and: [{ _id: otherUserId }, { followers: { $elemMatch: { $eq: userId } } }],
+    });
+
+    return res.status(200).json({
+      success: true,
+      result: !!result,
+      message: `Successfully check.`,
+    });
+  },
 };
 
 module.exports = userFollowControllers;

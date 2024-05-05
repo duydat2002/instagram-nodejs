@@ -163,7 +163,7 @@ const userController = {
 
     return res.status(200).json({
       success: true,
-      result: user,
+      result: { avatar: avatarUrl },
       message: "Successfully update user avatar.",
     });
   },
@@ -185,7 +185,7 @@ const userController = {
 
     return res.status(200).json({
       success: true,
-      result: user,
+      result: null,
       message: "Successfully update user avatar.",
     });
   },

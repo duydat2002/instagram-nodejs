@@ -11,7 +11,7 @@ const PostSchema = new Schema(
       ref: "User",
       required: [true, "Author is required."],
       autopopulate: {
-        select: "_id username",
+        select: "_id username avatar",
         maxDepth: 1,
       },
     },

@@ -25,6 +25,7 @@ router.post("/:id/unfollow", verifyTokenWithPermission(), handleErrors(userContr
 router.get("/:id/mutual-follow", verifyToken, handleErrors(userController.getMutualFollowBy));
 router.get("/:id/followers", verifyToken, handleErrors(userController.getFollowers));
 router.get("/:id/followings", verifyToken, handleErrors(userController.getFollowings));
+router.post("/:id/check-following", verifyToken, handleErrors(userController.checkIsFollowing));
 
 router.post(
   "/:id/upload",

@@ -10,7 +10,7 @@ const CommentSchema = new Schema(
       ref: "User",
       require: true,
       autopopulate: {
-        select: "_id username",
+        select: "_id username avatar",
         maxDepth: 1,
       },
     },

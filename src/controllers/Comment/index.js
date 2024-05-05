@@ -12,31 +12,17 @@ const commentController = {
       message: "Successfully get comments.",
     });
   },
-  getCommentById: async (req, res) => {
-    const comment = await Comment.findById(req.params.commentId);
-
-    if (!comment)
-      return res.status(400).json({
-        success: false,
-        result: null,
-        message: "Cannot found comment.",
-      });
+  getPostComments: async (req, res) => {
+    const comments = await Comment.find({ post: req.params.postId }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
-      result: { comment },
-      message: "Successfully get comment.",
+      result: { comments },
+      message: "Successfully get post comments.",
     });
   },
   getReplies: async (req, res) => {
-    const replies = await Comment.find({ parentComment: req.params.commentId });
-
-    if (!replies)
-      return res.status(400).json({
-        success: false,
-        result: null,
-        message: "Cannot found replies.",
-      });
+    const replies = await Reply.find({ comment: req.params.commentId }).sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -75,7 +61,7 @@ const commentController = {
 
     return res.status(200).json({
       success: true,
-      result: comment,
+      result: { comment: comment || reply },
       message: "Successfully update comment.",
     });
   },
@@ -103,7 +89,7 @@ const commentController = {
 
     return res.status(200).json({
       success: true,
-      result: comment || reply,
+      result: null,
       message: "Successfully delete comment.",
     });
   },
@@ -132,7 +118,7 @@ const commentController = {
 
     return res.status(200).json({
       success: true,
-      result: comment,
+      result: { comment },
       message: "Successfully comment post.",
     });
   },
@@ -160,8 +146,60 @@ const commentController = {
 
     return res.status(200).json({
       success: true,
-      result: reply,
+      result: { reply },
       message: "Successfully reply comment.",
+    });
+  },
+  likeComment: async (req, res) => {
+    const commentId = req.params.commentId;
+    const userId = req.payload.id;
+
+    let result = await Comment.findByIdAndUpdate(commentId, {
+      $addToSet: { likes: userId },
+    });
+
+    if (!result)
+      result = await Reply.findByIdAndUpdate(commentId, {
+        $addToSet: { likes: userId },
+      });
+
+    if (!result)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found comment/ reply.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: null,
+      message: "Successfully like comment/ reply.",
+    });
+  },
+  unlikeComment: async (req, res) => {
+    const commentId = req.params.commentId;
+    const userId = req.payload.id;
+
+    let result = await Comment.findByIdAndUpdate(commentId, {
+      $pull: { likes: userId },
+    });
+
+    if (!result)
+      result = await Reply.findByIdAndUpdate(commentId, {
+        $pull: { likes: userId },
+      });
+
+    if (!result)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found comment/ reply.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: null,
+      message: "Successfully like comment/ reply.",
     });
   },
 };

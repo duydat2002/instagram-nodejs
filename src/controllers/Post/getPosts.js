@@ -39,6 +39,17 @@ const getPostsControllers = {
       message: "Successfully get tagged posts.",
     });
   },
+  getOtherPostsByAuthor: async (req, res) => {
+    const posts = await Post.find({ author: req.params.userId, _id: { $ne: req.params.postId } }).sort({
+      createdAt: -1,
+    });
+
+    return res.status(200).json({
+      success: true,
+      result: { posts },
+      message: "Successfully get other posts by author.",
+    });
+  },
 };
 
 module.exports = getPostsControllers;

@@ -10,6 +10,7 @@ router.get("/", verifyToken, handleErrors(postController.getAllPost));
 router.get("/get-posts/:userId", handleErrors(postController.getPostsByAuthor));
 router.get("/get-saved-posts", verifyToken, handleErrors(postController.getSavedPosts));
 router.get("/get-tagged-posts/:userId", verifyToken, handleErrors(postController.getTaggedPostsByUserId));
+router.get("/:postId/get-other-posts/:userId", verifyToken, handleErrors(postController.getOtherPostsByAuthor));
 
 router.post("/", verifyToken, upload.any("contents"), handleErrors(postController.createPost));
 router.get("/:postId", verifyToken, handleErrors(postController.getPostById));

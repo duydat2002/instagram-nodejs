@@ -103,7 +103,7 @@ const userController = {
 
     return res.status(200).json({
       success: true,
-      result: user,
+      result: { user },
       message: "Successfully update user.",
     });
   },

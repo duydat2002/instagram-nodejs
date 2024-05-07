@@ -85,7 +85,7 @@ const postController = {
 
     return res.status(200).json({
       success: true,
-      result: post,
+      result: { post },
       message: "Successfully create post.",
     });
   },
@@ -110,7 +110,7 @@ const postController = {
 
     return res.status(200).json({
       success: true,
-      result: post,
+      result: { post },
       message: "Successfully delete post.",
     });
   },
@@ -140,7 +140,7 @@ const postController = {
 
     return res.status(200).json({
       success: true,
-      result: post,
+      result: { post },
       message: "Successfully update post.",
     });
   },

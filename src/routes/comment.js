@@ -6,7 +6,7 @@ const { verifyToken } = require("@/middlewares/auth");
 const { handleErrors } = require("@/handlers/errorHandlers");
 
 router.get("/", verifyToken, handleErrors(commentController.getAllComment));
-router.get("/:postId", verifyToken, handleErrors(commentController.getPostComments));
+router.get("/:postId", handleErrors(commentController.getPostComments));
 router.get("/:commentId/replies", verifyToken, handleErrors(commentController.getReplies));
 router.patch("/:commentId", verifyToken, handleErrors(commentController.updateComment));
 router.delete("/:commentId", verifyToken, handleErrors(commentController.deleteComment));

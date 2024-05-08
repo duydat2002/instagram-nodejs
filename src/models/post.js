@@ -35,33 +35,30 @@ const PostSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "User",
-        // autopopulate: {
-        //   maxDepth: 1,
-        // },
       },
     ],
     likes: [
       {
         type: Schema.Types.ObjectId,
         ref: "User",
-        // autopopulate: {
-        //   maxDepth: 1,
-        // },
       },
     ],
     comments: [
       {
         type: Schema.Types.ObjectId,
         ref: "Comment",
-        // autopopulate: {
-        //   maxDepth: 1,
-        // },
       },
     ],
     ratio: {
       type: Number,
       default: 1,
     },
+    viewers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

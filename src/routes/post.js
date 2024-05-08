@@ -10,10 +10,11 @@ router.get("/", verifyToken, handleErrors(postController.getAllPost));
 router.get("/get-posts/:userId", handleErrors(postController.getPostsByAuthor));
 router.get("/get-saved-posts", verifyToken, handleErrors(postController.getSavedPosts));
 router.get("/get-tagged-posts/:userId", verifyToken, handleErrors(postController.getTaggedPostsByUserId));
-router.get("/:postId/get-other-posts/:userId", verifyToken, handleErrors(postController.getOtherPostsByAuthor));
+router.get("/get-posts-follow", verifyToken, handleErrors(postController.getPostsIsFollow));
+router.get("/:postId/get-other-posts/:userId", handleErrors(postController.getOtherPostsByAuthor));
 
 router.post("/", verifyToken, upload.any("contents"), handleErrors(postController.createPost));
-router.get("/:postId", verifyToken, handleErrors(postController.getPostById));
+router.get("/:postId", handleErrors(postController.getPostById));
 router.patch("/:postId", verifyToken, handleErrors(postController.updatePost));
 router.delete("/:postId", verifyToken, handleErrors(postController.deletePost));
 router.post("/:postId/like", verifyToken, handleErrors(postController.likePost));

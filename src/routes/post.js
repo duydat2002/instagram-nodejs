@@ -17,6 +17,7 @@ router.post("/", verifyToken, upload.any("contents"), handleErrors(postControlle
 router.get("/:postId", handleErrors(postController.getPostById));
 router.patch("/:postId", verifyToken, handleErrors(postController.updatePost));
 router.delete("/:postId", verifyToken, handleErrors(postController.deletePost));
+router.get("/:postId/likes", verifyToken, handleErrors(postController.getLikedUsersOfPost));
 router.post("/:postId/like", verifyToken, handleErrors(postController.likePost));
 router.post("/:postId/unlike", verifyToken, handleErrors(postController.unlikePost));
 router.post("/:postId/save", verifyToken, handleErrors(postController.savePost));

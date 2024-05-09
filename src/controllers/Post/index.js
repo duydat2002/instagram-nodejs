@@ -144,6 +144,53 @@ const postController = {
       message: "Successfully update post.",
     });
   },
+  getLikedUsersOfPost: async (req, res) => {
+    const userId = req.payload.id;
+
+    const post = await Post.findById(req.params.postId);
+
+    const users = await User.aggregate([
+      { $match: { _id: { $in: post.likes } } },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: {
+            $cond: [{ $in: [userId, "$followers"] }, true, false],
+          },
+          followOrder: {
+            $cond: [
+              { $eq: [userId, "$_id"] },
+              0,
+              {
+                $cond: [{ $in: [userId, "$followers"] }, 1, 2],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          id: 1,
+          username: 1,
+          fullname: 1,
+          avatar: 1,
+          followers: 1,
+          followings: 1,
+          isFollowed: 1,
+          followOrder: 1,
+        },
+      },
+      {
+        $sort: { followOrder: 1 },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      result: { users: users || [] },
+      message: "Successfully get liked post users.",
+    });
+  },
   likePost: async (req, res) => {
     const { success, user, post, message } = await checkUserPost(req);
 

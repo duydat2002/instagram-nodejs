@@ -8,6 +8,7 @@ const { handleErrors } = require("@/handlers/errorHandlers");
 router.get("/", verifyToken, handleErrors(commentController.getAllComment));
 router.get("/:postId", handleErrors(commentController.getPostComments));
 router.get("/:commentId/replies", verifyToken, handleErrors(commentController.getReplies));
+router.get("/:commentId/likes", verifyToken, handleErrors(commentController.getLikedUsersOfComment));
 router.patch("/:commentId", verifyToken, handleErrors(commentController.updateComment));
 router.delete("/:commentId", verifyToken, handleErrors(commentController.deleteComment));
 router.post("/:postId", verifyToken, handleErrors(commentController.commentPost));

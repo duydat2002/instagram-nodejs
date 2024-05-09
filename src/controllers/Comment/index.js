@@ -1,3 +1,4 @@
+const User = require("@/models/user");
 const Post = require("@/models/post");
 const Comment = require("@/models/comment");
 const Reply = require("@/models/reply");
@@ -28,6 +29,61 @@ const commentController = {
       success: true,
       result: { replies },
       message: "Successfully get replies.",
+    });
+  },
+  getLikedUsersOfComment: async (req, res) => {
+    const userId = req.payload.id;
+
+    let comment = await Comment.findById(req.params.commentId);
+    if (!comment) comment = await Reply.findById(req.params.commentId);
+
+    if (!comment)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found comment/ reply.",
+      });
+
+    const users = await User.aggregate([
+      { $match: { _id: { $in: comment.likes } } },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: {
+            $cond: [{ $in: [userId, "$followers"] }, true, false],
+          },
+          followOrder: {
+            $cond: [
+              { $eq: [userId, "$_id"] },
+              0,
+              {
+                $cond: [{ $in: [userId, "$followers"] }, 1, 2],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          id: 1,
+          username: 1,
+          fullname: 1,
+          avatar: 1,
+          followers: 1,
+          followings: 1,
+          isFollowed: 1,
+          followOrder: 1,
+        },
+      },
+      {
+        $sort: { followOrder: 1 },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      result: { users: users || [] },
+      message: "Successfully get users liked comment/ reply.",
     });
   },
   updateComment: async (req, res) => {

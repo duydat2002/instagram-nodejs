@@ -1,4 +1,5 @@
 const User = require("@/models/user");
+const Post = require("@/models/post");
 const Token = require("@/models/token");
 const userFollowControllers = require("./follow");
 const {
@@ -31,6 +32,23 @@ const userController = {
       success: true,
       result: { user },
       message: "Successfully get user.",
+    });
+  },
+  getUserPreview: async (req, res) => {
+    const user = await User.findById(req.params.id, { password: 0 });
+    const posts = await Post.find({ author: req.params.id }).sort({ createAt: -1 }).limit(3);
+
+    if (!user)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found user.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: { user, posts },
+      message: "Successfully get user review.",
     });
   },
   getUserById: async (req, res) => {

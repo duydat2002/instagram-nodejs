@@ -94,6 +94,53 @@ const getPostsControllers = {
       message: "Successfully get posts follow.",
     });
   },
+  getNewfeeds: async (req, res) => {
+    const user = await User.findById(req.payload.id);
+
+    let posts = await Post.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              $or: [{ author: { $in: user.followers } }, { author: { $in: user.followings } }],
+            },
+            { author: { $ne: user.id } },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          id: "$_id",
+          isFollowed: {
+            $cond: [{ $in: ["$author", user.followings] }, true, false],
+          },
+          followOrder: {
+            $cond: [
+              { $in: ["$author", user.followings] },
+              0,
+              {
+                $cond: [{ $in: ["$author", user.followers] }, 1, 2],
+              },
+            ],
+          },
+          viewedByUser: {
+            $in: [user._id, "$viewers"],
+          },
+        },
+      },
+      {
+        $sort: { viewedByUser: 1, followOrder: 1, createdAt: -1 },
+      },
+    ]);
+
+    posts = await Post.populate(posts, { path: "author", select: "_id username avatar" });
+
+    return res.status(200).json({
+      success: true,
+      result: { posts },
+      message: "Successfully get posts follow.",
+    });
+  },
 };
 
 module.exports = getPostsControllers;

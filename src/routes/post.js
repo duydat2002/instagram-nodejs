@@ -10,6 +10,7 @@ router.get("/", verifyToken, handleErrors(postController.getAllPost));
 router.get("/get-posts/:userId", handleErrors(postController.getPostsByAuthor));
 router.get("/get-saved-posts", verifyToken, handleErrors(postController.getSavedPosts));
 router.get("/get-tagged-posts/:userId", verifyToken, handleErrors(postController.getTaggedPostsByUserId));
+router.get("/get-newfeeds", verifyToken, handleErrors(postController.getNewfeeds));
 router.get("/get-posts-follow", verifyToken, handleErrors(postController.getPostsIsFollow));
 router.get("/:postId/get-other-posts/:userId", handleErrors(postController.getOtherPostsByAuthor));
 
@@ -24,5 +25,6 @@ router.post("/:postId/save", verifyToken, handleErrors(postController.savePost))
 router.post("/:postId/unsave", verifyToken, handleErrors(postController.unsavePost));
 router.post("/:postId/tag", verifyToken, handleErrors(postController.tagPost));
 router.post("/:postId/untag", verifyToken, handleErrors(postController.untagPost));
+router.post("/:postId/viewed", verifyToken, handleErrors(postController.viewedPost));
 
 module.exports = router;

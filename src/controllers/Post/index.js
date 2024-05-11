@@ -376,6 +376,24 @@ const postController = {
       message: `${user.username} untag post ${post._id}.`,
     });
   },
+  viewedPost: async (req, res) => {
+    const post = await Post.findByIdAndUpdate(req.params.postId, {
+      $addToSet: { viewers: req.payload.id },
+    });
+
+    if (!post)
+      return res.status(400).json({
+        success: false,
+        result: null,
+        message: "Cannot found post.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      result: null,
+      message: "Successfully viewed post.",
+    });
+  },
   ...getPosts,
 };
 

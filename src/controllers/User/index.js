@@ -83,6 +83,76 @@ const userController = {
       message: "Successfully get user.",
     });
   },
+  // 0. The users has followed you
+  //     $in: [user._id, "$followings"]
+  // 1. The users is followed by the person you are following
+  //     $in: ["$followers", user.followings]
+  // 2. The users who are following the person you are following
+  //     $in: ["$followings", user.followings]
+  // 3. The users who are followed by the person who is following you
+  //     $in: ["$followers", user.followers]
+  // 4. Orther users
+  getFriendSuggestion: async (req, res) => {
+    const user = await User.findById(req.payload.id);
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          $and: [{ _id: { $ne: user._id } }, { followers: { $nin: [user._id] } }],
+        },
+      },
+      {
+        $addFields: {
+          id: "$_id",
+          order: {
+            $cond: [
+              { $in: [user._id, "$followings"] },
+              0,
+              {
+                $cond: [
+                  { $in: ["$followers", user.followings] },
+                  1,
+                  {
+                    $cond: [
+                      { $in: ["$followings", user.followings] },
+                      2,
+                      {
+                        $cond: [{ $in: ["$followers", user.followers] }, 3, 4],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          id: 1,
+          username: 1,
+          fullname: 1,
+          avatar: 1,
+          followers: 1,
+          followings: 1,
+          isFollowed: 1,
+          order: 1,
+        },
+      },
+      {
+        $sort: { order: 1 },
+      },
+      {
+        $limit: 5,
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      result: { users },
+      message: "Successfully get friend suggestion.",
+    });
+  },
   updateUser: async (req, res) => {
     const { username, email, fullname, bio } = req.body;
     let avatarUrl;

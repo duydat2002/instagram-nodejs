@@ -8,9 +8,10 @@ const router = express.Router();
 
 router.get("/", verifyTokenWithPermission(false), handleErrors(userController.getAllUser));
 router.get("/get-info", verifyTokenWithPermission(false), handleErrors(userController.getUser));
+router.get("/by-username/:username", handleErrors(userController.getUserByUsername));
+router.get("/get-friend-suggestion", verifyToken, handleErrors(userController.getFriendSuggestion));
 router.get("/:id", verifyTokenWithPermission(false), handleErrors(userController.getUserById));
 router.get("/:id/get-review", verifyToken, handleErrors(userController.getUserPreview));
-router.get("/by-username/:username", handleErrors(userController.getUserByUsername));
 router.patch("/:id", verifyTokenWithPermission(), upload.single("avatar"), handleErrors(userController.updateUser));
 router.delete("/:id", verifyTokenWithPermission(), handleErrors(userController.deleteUser));
 router.patch(

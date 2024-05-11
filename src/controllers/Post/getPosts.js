@@ -95,17 +95,16 @@ const getPostsControllers = {
     });
   },
   getNewfeeds: async (req, res) => {
+    let { start, pageSize } = req.query;
+    start = isNaN(parseInt(start)) ? 1 : parseInt(start);
+    pageSize = isNaN(parseInt(pageSize)) ? 10 : parseInt(pageSize);
+
     const user = await User.findById(req.payload.id);
 
     let posts = await Post.aggregate([
       {
         $match: {
-          $and: [
-            {
-              $or: [{ author: { $in: user.followers } }, { author: { $in: user.followings } }],
-            },
-            { author: { $ne: user.id } },
-          ],
+          author: { $ne: user.id },
         },
       },
       {
@@ -131,6 +130,12 @@ const getPostsControllers = {
       {
         $sort: { viewedByUser: 1, followOrder: 1, createdAt: -1 },
       },
+      {
+        $skip: start,
+      },
+      {
+        $limit: pageSize,
+      },
     ]);
 
     posts = await Post.populate(posts, { path: "author", select: "_id username avatar" });
@@ -138,7 +143,7 @@ const getPostsControllers = {
     return res.status(200).json({
       success: true,
       result: { posts },
-      message: "Successfully get posts follow.",
+      message: `Successfully get newfeeds ${start}.`,
     });
   },
 };

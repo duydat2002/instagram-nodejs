@@ -96,7 +96,7 @@ const getPostsControllers = {
   },
   getNewfeeds: async (req, res) => {
     let { start, pageSize } = req.query;
-    start = isNaN(parseInt(start)) ? 1 : parseInt(start);
+    start = isNaN(parseInt(start)) ? 0 : parseInt(start);
     pageSize = isNaN(parseInt(pageSize)) ? 10 : parseInt(pageSize);
 
     const user = await User.findById(req.payload.id);
@@ -144,6 +144,56 @@ const getPostsControllers = {
       success: true,
       result: { posts },
       message: `Successfully get newfeeds ${start}.`,
+    });
+  },
+  getExplores: async (req, res) => {
+    let { start, pageSize } = req.query;
+    start = isNaN(parseInt(start)) ? 0 : parseInt(start);
+    pageSize = isNaN(parseInt(pageSize)) ? 10 : parseInt(pageSize);
+
+    const user = await User.findById(req.payload.id);
+
+    let posts = await Post.aggregate([
+      {
+        $match: {
+          author: { $ne: user.id },
+        },
+      },
+      {
+        $addFields: {
+          id: "$_id",
+          numberOfLikes: {
+            $cond: [{ $isArray: "$likes" }, { $size: "$likes" }, 0],
+          },
+          followOrder: {
+            $cond: [
+              { $in: ["$author", user.followings] },
+              0,
+              {
+                $cond: [{ $in: ["$author", user.followers] }, 1, 2],
+              },
+            ],
+          },
+          viewedByUser: {
+            $in: [user._id, "$viewers"],
+          },
+        },
+      },
+      {
+        $sort: { numberOfLikes: -1, viewedByUser: 1, followOrder: 1, createdAt: -1 },
+      },
+      {
+        $skip: start,
+      },
+      {
+        $limit: pageSize,
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      result: { posts },
+      message: `Successfully get explores ${start}.`,
     });
   },
 };

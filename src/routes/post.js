@@ -11,6 +11,7 @@ router.get("/get-posts/:userId", handleErrors(postController.getPostsByAuthor));
 router.get("/get-saved-posts", verifyToken, handleErrors(postController.getSavedPosts));
 router.get("/get-tagged-posts/:userId", verifyToken, handleErrors(postController.getTaggedPostsByUserId));
 router.get("/get-newfeeds", verifyToken, handleErrors(postController.getNewfeeds));
+router.get("/get-explores", verifyToken, handleErrors(postController.getExplores));
 router.get("/get-posts-follow", verifyToken, handleErrors(postController.getPostsIsFollow));
 router.get("/:postId/get-other-posts/:userId", handleErrors(postController.getOtherPostsByAuthor));
 

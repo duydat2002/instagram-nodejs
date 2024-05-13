@@ -93,6 +93,9 @@ const userController = {
   //     $in: ["$followers", user.followers]
   // 4. Orther users
   getFriendSuggestion: async (req, res) => {
+    let { limit } = req.query;
+    limit = isNaN(parseInt(limit)) ? 0 : parseInt(limit);
+
     const user = await User.findById(req.payload.id);
 
     const users = await User.aggregate([
@@ -143,7 +146,7 @@ const userController = {
         $sort: { order: 1 },
       },
       {
-        $limit: 5,
+        $limit: limit ?? 5,
       },
     ]);
 

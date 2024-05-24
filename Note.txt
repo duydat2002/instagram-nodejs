@@ -54,3 +54,30 @@ phamduydat2002 - duydat30122002
 duydat
 
 
+### Luồng socket
+Connect -> user join UserRoom, user join ConversationRooms 
+Create Conversation -> All members in conversation join ConversationRoom
+Send Message -> emit to other members in conversation
+
+### Socket
+#io
+  io là một đối tượng đại diện cho toàn bộ server Socket.io. Nó được tạo ra khi bạn khởi tạo một instance của Socket.io trên server. io cung cấp các phương thức để quản lý kết nối từ các client, tạo và quản lý các phòng (rooms), và gửi các sự kiện đến các client.
+#Các phương thức chính của io
+  io.on(event, callback): Lắng nghe các sự kiện toàn cục, chẳng hạn như khi một client kết nối.
+  io.emit(event, data): Gửi sự kiện đến tất cả các client được kết nối.
+  io.to(room).emit(event, data): Gửi sự kiện đến tất cả các client trong một phòng cụ thể.
+  io.in(room1).socketsJoin(room2): Tất cả socket trong room1 tham gia vào room2
+
+#socket
+  socket đại diện cho một kết nối cá nhân từ một client đến server. Mỗi khi một client kết nối đến server, một đối tượng socket mới được tạo. socket cung cấp các phương thức để giao tiếp hai chiều với client cụ thể đó, tham gia vào các phòng, và gửi/nhận các sự kiện.
+
+#Các phương thức chính của socket
+  socket.emit(event, data): Gửi sự kiện và dữ liệu đến chính client này.
+  socket.on(event, callback): Lắng nghe các sự kiện từ client và thực thi callback khi sự kiện xảy ra.
+  socket.join(room): Tham gia vào một phòng.
+  socket.leave(room): Rời khỏi một phòng.
+  socket.to(room).emit(event, data): Gửi sự kiện và dữ liệu đến tất cả các client khác trong phòng, ngoại trừ chính client này.
+
+#Mối quan hệ giữa io và socket
+  io là đại diện cho toàn bộ server, quản lý tất cả các kết nối.
+  socket là đại diện cho một kết nối cụ thể từ một client.

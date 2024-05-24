@@ -90,6 +90,14 @@ const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isOnline: {
+      type: Boolean,
+      default: true,
+    },
+    lastOnline: {
+      type: Date,
+      default: new Date(),
+    },
   },
   { timestamps: true }
 );

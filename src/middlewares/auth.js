@@ -41,7 +41,24 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+const verifyTokenSocket = (socket, next) => {
+  const token = socket.handshake.auth?.token ?? socket.handshake.headers?.token;
+
+  if (!token) {
+    return next(new Error("Access token is required."));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    socket.request.user = decoded;
+    next();
+  } catch (err) {
+    return next(new Error("Unauthorized."));
+  }
+};
+
 module.exports = {
   verifyToken,
   verifyTokenWithPermission,
+  verifyTokenSocket,
 };

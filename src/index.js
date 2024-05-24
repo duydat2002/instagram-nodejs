@@ -2,9 +2,13 @@ require("module-alias/register");
 const dotenv = require("dotenv");
 const express = require("express");
 const mongoose = require("mongoose");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const routes = require("./routes");
+const socketHandle = require("./sockets");
 
 dotenv.config();
 
@@ -19,6 +23,19 @@ app.use(function (req, res, next) {
   next();
 });
 
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ["https://admin.socket.io", "http://localhost:5555"],
+    credentials: true,
+  },
+});
+
+instrument(io, {
+  auth: false,
+  mode: "development",
+});
+
 app.use(cors());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -28,13 +45,20 @@ app.get("/", (req, res) => {
   res.send("GET request to homepage");
 });
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+socketHandle(io);
+
 routes(app);
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_STRING)
   .then(() => {
     console.log(`Connected to ${process.env.MONGODB_CONNECTION_STRING}`);
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log(`Instagram running onn PORT: ${process.env.PORT}`);
     });
   })

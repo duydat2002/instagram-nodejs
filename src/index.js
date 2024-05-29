@@ -28,7 +28,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "https://admin.socket.io",
-      "https://instagram-mevn.vercel.app/",
+      "https://instagram-mevn.vercel.app",
       "http://localhost:5555",
       "http://localhost:5173",
     ],
@@ -41,7 +41,11 @@ instrument(io, {
   mode: "development",
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://instagram-mevn.vercel.app"],
+  })
+);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

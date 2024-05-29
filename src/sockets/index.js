@@ -1,5 +1,5 @@
 const { verifyTokenSocket } = require("../middlewares/auth");
-const { userRoom, conversationRoom, conversationUsersRoom } = require("../utils");
+const { userRoom, conversationRoom } = require("../utils");
 const handleChatSocket = require("./Chat");
 const User = require("../models/user");
 const Conversation = require("../models/conversation");
@@ -10,7 +10,7 @@ const socketHandle = (io) => {
   io.use(async (socket, next) => {
     socket.userId = socket.request.user.id;
 
-    const user = await User.findByIdAndUpdate(socket.userId, { isOnline: true });
+    const user = await User.findByIdAndUpdate(socket.userId, { isOnline: true, lastOnline: new Date() });
     const conversations = await Conversation.find({ members: { $elemMatch: { $eq: socket.userId } } });
 
     conversations?.forEach((conversation) => {

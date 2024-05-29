@@ -26,7 +26,12 @@ app.use(function (req, res, next) {
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["https://admin.socket.io", "http://localhost:5555"],
+    origin: [
+      "https://admin.socket.io",
+      "https://instagram-mevn.vercel.app/",
+      "http://localhost:5555",
+      "http://localhost:5173",
+    ],
     credentials: true,
   },
 });

@@ -17,8 +17,8 @@ const messageSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["text", "image", "voice", "reply"],
-      required: true,
+      enum: ["text", "image", "voice"],
+      default: "text",
     },
     content: {
       type: String,
@@ -27,14 +27,13 @@ const messageSchema = new Schema(
     replyTo: {
       type: Schema.Types.ObjectId,
       ref: "Message",
-      required: function () {
-        return this.type == "reply";
+    },
+    readBy: [
+      {
+        userId: { type: Schema.Types.ObjectId, ref: "User" },
+        readAt: { type: Date },
       },
-    },
-    readBy: {
-      userId: { type: Schema.Types.ObjectId, ref: "User" },
-      readAt: { type: Date },
-    },
+    ],
   },
   { timestamps: true }
 );

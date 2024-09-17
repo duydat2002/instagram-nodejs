@@ -17,7 +17,7 @@ const socketHandle = (io) => {
       socket.join(conversationRoom(conversation.id));
       io.to(conversationRoom(conversation.id))
         .except(userRoom(socket.userId))
-        .emit("user:connected", { userId: user.id });
+        .emit("user:connected", { userId: user.id, lastOnline: user.lastOnline });
     });
     socket.join(userRoom(socket.userId));
 
@@ -28,6 +28,7 @@ const socketHandle = (io) => {
     handleChatSocket(io, socket);
 
     socket.on("disconnect", async () => {
+      console.log("disconnect");
       setTimeout(async () => {
         const sockets = await io.in(userRoom(socket.userId)).fetchSockets();
         const hasReconnected = sockets.length > 0;

@@ -26,11 +26,16 @@ const conversationSchema = new Schema(
         },
         message: "The members must have at least 2 elements.",
       },
+      autopopulate: {
+        select: "_id username avatar isOnline lastOnline",
+        maxDepth: 1,
+      },
     },
     lastMessage: {
       type: Schema.Types.ObjectId,
       ref: "Message",
       autopopulate: {
+        select: "_id author type content createdAt",
         maxDepth: 1,
       },
     },

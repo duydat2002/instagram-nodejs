@@ -43,7 +43,7 @@ instrument(io, {
 
 app.use(
   cors({
-    origin: ["https://instagram-mevn.vercel.app"],
+    origin: ["https://instagram-mevn.vercel.app", "http://localhost:5173"],
   })
 );
 app.use(cookieParser());
@@ -60,6 +60,7 @@ app.use((req, res, next) => {
 });
 
 socketHandle(io);
+global.io = io;
 
 routes(app);
 
@@ -74,3 +75,4 @@ mongoose
   .catch((err) => console.log(err));
 
 mongoose.set("toJSON", { virtuals: true });
+mongoose.set("toObject", { virtuals: true });
